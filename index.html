@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inmoinnova Legal CRM - Centro de Operaciones</title>
+    <style>
+        :root {
+            --primary: #1e293b;
+            --secondary: #0f172a;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --border-color: #cbd5e1;
+            --danger: #dc2626;
+            --success: #16a34a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* LOGIN OVERLAY */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-card h2 {
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .login-card input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* APP HEADER */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .badge {
+            background-color: var(--danger);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* MAIN LAYOUT */
+        .main-container {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            flex: 1;
+            height: calc(100vh - 70px);
+        }
+
+        @media (max-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+
+        /* SIDEBAR LIST */
+        .sidebar {
+            background: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .client-list {
+            list-style: none;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .client-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .client-item:hover, .client-item.active {
+            background: #f1f5f9;
+        }
+
+        .client-item h4 {
+            font-size: 16px;
+            color: var(--secondary);
+            margin-bottom: 4px;
+        }
+
+        .client-item p {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        /* CONTENT WORKSPACE */
+        .workspace {
+            padding: 30px;
+            overflow-y: auto;
+            background: var(--bg-color);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--secondary);
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        .notes-section {
+            margin-top: 20px;
+        }
+
+        .notes-history {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn-success {
+            background-color: var(--success);
+        }
+        .btn-success:hover {
+            background-color: #15803d;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA DE ACCESO SEGURO -->
+    <div id="login-screen">
+        <div class="login-card">
+            <h2>Acceso Legal CRM</h2>
+            <p style="margin-bottom: 20px; color: #64748b; font-size: 14px;">Inmoinnova Real Estate - Centro de Operaciones</p>
+            <input type="password" id="master-password" placeholder="Ingrese su Clave Maestra" />
+            <button class="btn" onclick="verificarAcceso()">Ingresar</button>
+            <p id="login-error" style="color: var(--danger); margin-top: 15px; font-size: 14px;"></p>
+        </div>
+    </div>
+
+    <!-- CABECERA PRINCIPAL CON BADGE DE NOTIFICACIONES -->
+    <header>
+        <div class="header-title">
+            <h2>⚖️ Inmoinnova Legal CRM</h2>
+            <div id="alert-badge" class="badge" style="display: none;" title="Plazos vencidos o próximos a vencer">
+                🚨 <span id="alert-count">0</span> Alertas
+            </div>
+        </div>
+        <div>
+            <button class="btn" style="background: #475569; padding: 8px 15px; font-size: 14px;" onclick="cargarClientes()">🔄 Sincronizar</button>
+        </div>
+    </header>
+
+    <!-- INTERFAZ DE TRABAJO -->
+    <div class="main-container">
+        <!-- BARRA LATERAL CON CLIENTES -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <input type="text" id="search-client" class="search-box" placeholder="Buscar por nombre, cédula o código..." onkeyup="filtrarClientes()" />
+                <button class="btn btn-success" style="font-size: 14px; padding: 8px;" onclick="nuevoCliente()">➕ Nuevo Expediente</button>
+            </div>
+            <ul id="client-list" class="client-list">
+                <div class="loading">Cargando expedientes...</div>
+            </ul>
+        </div>
+
+        <!-- PANEL DETALLADO DEL CLIENTE / CASO -->
+        <div class="workspace" id="workspace-panel">
+            <div class="card" style="text-align: center; color: #64748b; padding: 50px;">
+                <h3>Seleccione un expediente de la lista o cree uno nuevo para comenzar.</h3>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwWrqTj63GHtcraeyzB4biWu0DnoR708dQP-_DGhYRzJp6-TDUsg3Rugz6c8dyH68OURg/exec";
+        let passwordGlobal = "";
+        let clientesData = [];
+        let clienteSeleccionadoIndex = null;
+
+        function verificarAcceso() {
+            const pass = document.getElementById("master-password").value;
+            if (!pass) return;
+
+            document.getElementById("login-error").innerText = "Verificando...";
+
+            fetch(APPS_SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify({ action: "login", password: pass })
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === "success") {
+                    passwordGlobal = pass;
+                    document.getElementById("login-screen").style.display = "none";
+                    cargarClientes();
+                } else {
+                    document.getElementById("login-error").innerText = response.message;
+                }
+            })
+            .catch(err => {
+                document.getElementById("login-error").innerText = "Error de conexión con el servidor.";
+            });
+        }
+
+        function cargarClientes() {
+            fetch(APPS_SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify({ action: "getClientes", password: passwordGlobal })
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === "success") {
+                    clientesData = response.data;
+                    renderizarListaClientes(clientesData);
+                    calcularAlertas();
+                } else {
+                    alert("Error al cargar clientes: " + response.message);
+                }
+            })
+            .catch(err => console.error(err));
+        }
+
+        function renderizarListaClientes(lista) {
+            const ul = document.getElementById("client-list");
+            ul.innerHTML = "";
+
+            if (lista.length === 0) {
+                ul.innerHTML = `<div class="loading">No hay expedientes registrados.</div>`;
+                return;
+            }
+
+            lista.forEach((c, index) => {
+                const li = document.createElement("li");
+                li.className = `client-item ${clienteSeleccionadoIndex === index ? 'active' : ''}`;
+                li.onclick = () => seleccionarCliente(index);
+                li.innerHTML = `
+                    <h4>${c.NombreCliente || 'Sin Nombre'}</h4>
+                    <p><strong>Cód:</strong> ${c.Codigo || 'N/A'} | <strong>Cédula:</strong> ${c.Cedula || 'N/A'}</p>
+                    <p style="color: var(--accent); font-size: 12px; margin-top: 2px;">${c.Materia || 'Materia no asignada'}</p>
+                `;
+                ul.appendChild(li);
+            });
+        }
+
+        function filtrarClientes() {
+            const query = document.getElementById("search-client").value.toLowerCase();
+            const filtrados = clientesData.filter(c => 
+                (c.NombreCliente && c.NombreCliente.toLowerCase().includes(query)) ||
+                (c.Cedula && c.Cedula.toString().toLowerCase().includes(query)) ||
+                (c.Codigo && c.Codigo.toString().toLowerCase().includes(query))
+            );
+            renderizarListaClientes(filtrados);
+        }
+
+        function nuevoCliente() {
+            clienteSeleccionadoIndex = -1;
+            const nuevoObj = {
+                Codigo: "EXP-" + new Date().getFullYear() + "-" + Math.floor(100 + Math.random() * 900),
+                Cedula: "",
+                NombreCliente: "",
+                Materia: "Inmobiliario",
+                EstadoCaso: "En Trámite",
+                FechaTope: "",
+                NotasLibres: `[${new Date().toLocaleDateString()}]: Creación del expediente.
+`
+            };
+            clientesData.unshift(nuevoObj);
+            renderizarListaClientes(clientesData);
+            seleccionarCliente(0);
+        }
+
+        function seleccionarCliente(index) {
+            clienteSeleccionadoIndex = index;
+            const c = clientesData[index];
+            renderizarWorkspace(c);
+            renderizarListaClientes(clientesData);
+        }
+
+        function renderizarWorkspace(c) {
+            const panel = document.getElementById("workspace-panel");
+            panel.innerHTML = `
+                <div class="card">
+                    <h3>📁 Detalle del Expediente / Miniperfil</h3>
+                    <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">Edite cualquier campo del cliente. Los cambios se guardarán automáticamente en su base de datos.</p>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Código de Expediente</label>
+                            <input type="text" id="input-codigo" value="${c.Codigo || ''}" onchange="actualizarCampoLocal('Codigo', this.value)" />
+                        </div>
+                        <div class="form-group">
+                            <label>Cédula de Identidad</label>
+                            <input type="text" id="input-cedula" value="${c.Cedula || ''}" onchange="actualizarCampoLocal('Cedula', this.value)" />
+                        </div>
+                        <div class="form-group">
+                            <label>Nombre Completo del Cliente</label>
+                            <input type="text" id="input-nombre" value="${c.NombreCliente || ''}" onchange="actualizarCampoLocal('NombreCliente', this.value)" />
+                        </div>
+                        <div class="form-group">
+                            <label>Materia Legal</label>
+                            <select id="input-materia" onchange="actualizarCampoLocal('Materia', this.value)">
+                                <option value="Inmobiliario" ${c.Materia === 'Inmobiliario' ? 'selected' : ''}>Inmobiliario</option>
+                                <option value="Civil" ${c.Materia === 'Civil' ? 'selected' : ''}>Civil</option>
+                                <option value="Mercantil" ${c.Materia === 'Mercantil' ? 'selected' : ''}>Mercantil</option>
+                                <option value="Sucesiones / Bienes" ${c.Materia === 'Sucesiones / Bienes' ? 'selected' : ''}>Sucesiones / Bienes</option>
+                                <option value="Laboral" ${c.Materia === 'Laboral' ? 'selected' : ''}>Laboral</option>
+                                <option value="Penal" ${c.Materia === 'Penal' ? 'selected' : ''}>Penal</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Estado del Caso</label>
+                            <input type="text" id="input-estado" value="${c.EstadoCaso || ''}" onchange="actualizarCampoLocal('EstadoCaso', this.value)" />
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha Tope / Vencimiento Tribunal</label>
+                            <input type="date" id="input-fecha" value="${c.FechaTope ? c.FechaTope.split('T')[0] : ''}" onchange="actualizarCampoLocal('FechaTope', this.value)" />
+                        </div>
+                    </div>
+
+                    <div class="notes-section">
+                        <label style="font-weight: 600; font-size: 14px; color: var(--secondary); display: block; margin-bottom: 8px;">Bitácora e Historial de Anotaciones (Texto Libre)</label>
+                        <div class="notes-history" id="display-notas">${c.NotasLibres || 'Sin anotaciones registradas.'}</div>
+                        
+                        <div class="form-group" style="margin-top: 10px;">
+                            <label>Agregar Nueva Anotación u Observación</label>
+                            <textarea id="nueva-nota-texto" rows="3" placeholder="Escriba el avance o diligencia realizada hoy..."></textarea>
+                        </div>
+                        <button class="btn" style="width: auto; margin-top: 10px; padding: 8px 15px; font-size: 14px;" onclick="agregarNotaAutocreable()">➕ Registrar Anotación</button>
+                    </div>
+
+                    <div class="action-bar">
+                        <button class="btn btn-success" onclick="guardarClienteActual()">💾 Guardar y Sincronizar Cambios</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function actualizarCampoLocal(campo, valor) {
+            if (clienteSeleccionadoIndex > -1) {
+                clientesData[clienteSeleccionadoIndex][campo] = valor;
+            }
+        }
+
+        function agregarNotaAutocreable() {
+            const textoNota = document.getElementById("nueva-nota-texto").value.trim();
+            if (!textoNota) return alert("Por favor escriba una anotación.");
+
+            const fechaStr = new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const formattedNote = `
+[${fechaStr}] ${textoNota}`;
+
+            const c = clientesData[clienteSeleccionadoIndex];
+            c.NotasLibres = (c.NotasLibres || "") + formattedNote;
+
+            document.getElementById("display-notas").innerText = c.NotasLibres;
+            document.getElementById("nueva-nota-texto").value = "";
+            guardarClienteActual();
+        }
+
+        function guardarClienteActual() {
+            if (clienteSeleccionadoIndex === -1) return;
+            const c = clientesData[clienteSeleccionadoIndex];
+
+            fetch(APPS_SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    action: "guardarCliente",
+                    password: passwordGlobal,
+                    cliente: c
+                })
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === "success") {
+                    alert("Expediente guardado y actualizado con éxito.");
+                    cargarClientes();
+                } else {
+                    alert("Error: " + response.message);
+                }
+            })
+            .catch(err => alert("Error de conexión al guardar."));
+        }
+
+        function calcularAlertas() {
+            let alertasCount = 0;
+            const hoy = new Date();
+            hoy.setHours(0,0,0,0);
+
+            clientesData.forEach(c => {
+                if (c.FechaTope) {
+                    const fechaTope = new Date(c.FechaTope);
+                    fechaTope.setHours(0,0,0,0);
+                    // Si la fecha tope ya pasó o es para hoy o los próximos 3 días
+                    const diffTime = fechaTope - hoy;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    if (diffDays <= 3) {
+                        alertasCount++;
+                    }
+                }
+            });
+
+            const badge = document.getElementById("alert-badge");
+            const countSpan = document.getElementById("alert-count");
+            if (alertasCount > 0) {
+                countSpan.innerText = alertasCount;
+                badge.style.display = "inline-flex";
+            } else {
+                badge.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
