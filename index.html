@@ -315,6 +315,8 @@
         let clientesData = [];
         let clienteSeleccionadoIndex = null;
 
+        const MATERIAS_PREDEFINIDAS = ["Inmobiliario", "Civil", "Mercantil", "Sucesiones / Bienes", "Laboral", "Penal"];
+
         function verificarAcceso() {
             const pass = document.getElementById("master-password").value;
             if (!pass) return;
@@ -416,6 +418,11 @@
 
         function renderizarWorkspace(c) {
             const panel = document.getElementById("workspace-panel");
+            
+            // Comprobar si la materia actual está dentro de las predefinidas o es un valor personalizado ("Otro")
+            const esMateriaCustom = c.Materia && !MATERIAS_PREDEFINIDAS.includes(c.Materia);
+            const valorSelect = esMateriaCustom ? "Otro" : (c.Materia || "Inmobiliario");
+
             panel.innerHTML = `
                 <div class="card">
                     <h3>📁 Detalle del Expediente / Miniperfil</h3>
@@ -436,15 +443,23 @@
                         </div>
                         <div class="form-group">
                             <label>Materia Legal</label>
-                            <select id="input-materia" onchange="actualizarCampoLocal('Materia', this.value)">
-                                <option value="Inmobiliario" ${c.Materia === 'Inmobiliario' ? 'selected' : ''}>Inmobiliario</option>
-                                <option value="Civil" ${c.Materia === 'Civil' ? 'selected' : ''}>Civil</option>
-                                <option value="Mercantil" ${c.Materia === 'Mercantil' ? 'selected' : ''}>Mercantil</option>
-                                <option value="Sucesiones / Bienes" ${c.Materia === 'Sucesiones / Bienes' ? 'selected' : ''}>Sucesiones / Bienes</option>
-                                <option value="Laboral" ${c.Materia === 'Laboral' ? 'selected' : ''}>Laboral</option>
-                                <option value="Penal" ${c.Materia === 'Penal' ? 'selected' : ''}>Penal</option>
+                            <select id="input-materia" onchange="manejarCambioMateria(this.value)">
+                                <option value="Inmobiliario" ${valorSelect === 'Inmobiliario' ? 'selected' : ''}>Inmobiliario</option>
+                                <option value="Civil" ${valorSelect === 'Civil' ? 'selected' : ''}>Civil</option>
+                                <option value="Mercantil" ${valorSelect === 'Mercantil' ? 'selected' : ''}>Mercantil</option>
+                                <option value="Sucesiones / Bienes" ${valorSelect === 'Sucesiones / Bienes' ? 'selected' : ''}>Sucesiones / Bienes</option>
+                                <option value="Laboral" ${valorSelect === 'Laboral' ? 'selected' : ''}>Laboral</option>
+                                <option value="Penal" ${valorSelect === 'Penal' ? 'selected' : ''}>Penal</option>
+                                <option value="Otro" ${valorSelect === 'Otro' ? 'selected' : ''}>Otro (Especificar)</option>
                             </select>
                         </div>
+
+                        <!-- CAMPO DE TEXTO PARA ESPECIFICAR CUANDO SE SELECCIONA "Otro" -->
+                        <div class="form-group" id="grupo-materia-custom" style="display: ${valorSelect === 'Otro' ? 'flex' : 'none'};">
+                            <label>Especifique la Materia</label>
+                            <input type="text" id="input-materia-custom" value="${esMateriaCustom ? c.Materia : ''}" placeholder="Ej: Constitucional, Administrativo..." onchange="actualizarCampoLocal('Materia', this.value)" />
+                        </div>
+
                         <div class="form-group">
                             <label>Estado del Caso</label>
                             <input type="text" id="input-estado" value="${c.EstadoCaso || ''}" onchange="actualizarCampoLocal('EstadoCaso', this.value)" />
@@ -471,6 +486,22 @@
                     </div>
                 </div>
             `;
+        }
+
+        function manejarCambioMateria(valorSelect) {
+            const grupoCustom = document.getElementById("grupo-materia-custom");
+            if (valorSelect === "Otro") {
+                grupoCustom.style.display = "flex";
+                const inputCustom = document.getElementById("input-materia-custom");
+                // Si venía de una materia predefinida, lo dejamos en blanco para que escriba
+                if (MATERIAS_PREDEFINIDAS.includes(inputCustom.value) || !inputCustom.value) {
+                    inputCustom.value = "";
+                    actualizarCampoLocal("Materia", "");
+                }
+            } else {
+                grupoCustom.style.display = "none";
+                actualizarCampoLocal("Materia", valorSelect);
+            }
         }
 
         function actualizarCampoLocal(campo, valor) {
