@@ -217,7 +217,7 @@
             color: var(--secondary);
         }
 
-        .form-group input, .form-group select, .form-group textarea {
+        .form-group input, .form-group textarea {
             padding: 10px;
             border: 1px solid var(--border-color);
             border-radius: 6px;
@@ -315,26 +315,27 @@
         let clientesData = [];
         let clienteSeleccionadoIndex = null;
 
-        const MATERIAS_PREDEFINIDAS = ["Inmobiliario", "Civil", "Mercantil", "Sucesiones / Bienes", "Laboral", "Penal"];
-
         function verificarAcceso() {
             const pass = document.getElementById("master-password").value;
             if (!pass) return;
 
             document.getElementById("login-error").innerText = "Verificando...";
 
+            // CORRECCIÓN 1: Se ajustan los parámetros 'accion' y 'claveMaestra' para que el Apps Script los reconozca
             fetch(APPS_SCRIPT_URL, {
                 method: "POST",
-                body: JSON.stringify({ action: "login", password: pass })
+                body: JSON.stringify({ accion: "obtener", claveMaestra: pass })
             })
             .then(res => res.json())
             .then(response => {
                 if (response.status === "success") {
                     passwordGlobal = pass;
                     document.getElementById("login-screen").style.display = "none";
-                    cargarClientes();
+                    clientesData = response.data || [];
+                    renderizarListaClientes(clientesData);
+                    calcularAlertas();
                 } else {
-                    document.getElementById("login-error").innerText = response.message;
+                    document.getElementById("login-error").innerText = response.message || "Acceso denegado.";
                 }
             })
             .catch(err => {
@@ -345,12 +346,12 @@
         function cargarClientes() {
             fetch(APPS_SCRIPT_URL, {
                 method: "POST",
-                body: JSON.stringify({ action: "getClientes", password: passwordGlobal })
+                body: JSON.stringify({ accion: "obtener", claveMaestra: passwordGlobal })
             })
             .then(res => res.json())
             .then(response => {
                 if (response.status === "success") {
-                    clientesData = response.data;
+                    clientesData = response.data || [];
                     renderizarListaClientes(clientesData);
                     calcularAlertas();
                 } else {
@@ -373,10 +374,11 @@
                 const li = document.createElement("li");
                 li.className = `client-item ${clienteSeleccionadoIndex === index ? 'active' : ''}`;
                 li.onclick = () => seleccionarCliente(index);
+                // CORRECCIÓN 2: Las variables ahora están en minúscula (ej: c.nombreCliente) igual que en Apps Script
                 li.innerHTML = `
-                    <h4>${c.NombreCliente || 'Sin Nombre'}</h4>
-                    <p><strong>Cód:</strong> ${c.Codigo || 'N/A'} | <strong>Cédula:</strong> ${c.Cedula || 'N/A'}</p>
-                    <p style="color: var(--accent); font-size: 12px; margin-top: 2px;">${c.Materia || 'Materia no asignada'}</p>
+                    <h4>${c.nombreCliente || 'Sin Nombre'}</h4>
+                    <p><strong>Cód:</strong> ${c.codigo || 'N/A'} | <strong>Cédula:</strong> ${c.cedula || 'N/A'}</p>
+                    <p style="color: var(--accent); font-size: 12px; margin-top: 2px;">${c.materia || 'Materia no asignada'}</p>
                 `;
                 ul.appendChild(li);
             });
@@ -385,9 +387,9 @@
         function filtrarClientes() {
             const query = document.getElementById("search-client").value.toLowerCase();
             const filtrados = clientesData.filter(c => 
-                (c.NombreCliente && c.NombreCliente.toLowerCase().includes(query)) ||
-                (c.Cedula && c.Cedula.toString().toLowerCase().includes(query)) ||
-                (c.Codigo && c.Codigo.toString().toLowerCase().includes(query))
+                (c.nombreCliente && c.nombreCliente.toLowerCase().includes(query)) ||
+                (c.cedula && c.cedula.toString().toLowerCase().includes(query)) ||
+                (c.codigo && c.codigo.toString().toLowerCase().includes(query))
             );
             renderizarListaClientes(filtrados);
         }
@@ -395,14 +397,13 @@
         function nuevoCliente() {
             clienteSeleccionadoIndex = -1;
             const nuevoObj = {
-                Codigo: "EXP-" + new Date().getFullYear() + "-" + Math.floor(100 + Math.random() * 900),
-                Cedula: "",
-                NombreCliente: "",
-                Materia: "Inmobiliario",
-                EstadoCaso: "En Trámite",
-                FechaTope: "",
-                NotasLibres: `[${new Date().toLocaleDateString()}]: Creación del expediente.
-`
+                codigo: "EXP-" + new Date().getFullYear() + "-" + Math.floor(100 + Math.random() * 900),
+                cedula: "",
+                nombreCliente: "",
+                materia: "",
+                estadoCaso: "En Trámite",
+                fechaTope: "",
+                notasLibres: `[${new Date().toLocaleDateString()}]: Creación del expediente.\n`
             };
             clientesData.unshift(nuevoObj);
             renderizarListaClientes(clientesData);
@@ -419,10 +420,6 @@
         function renderizarWorkspace(c) {
             const panel = document.getElementById("workspace-panel");
             
-            // Comprobar si la materia actual está dentro de las predefinidas o es un valor personalizado ("Otro")
-            const esMateriaCustom = c.Materia && !MATERIAS_PREDEFINIDAS.includes(c.Materia);
-            const valorSelect = esMateriaCustom ? "Otro" : (c.Materia || "Inmobiliario");
-
             panel.innerHTML = `
                 <div class="card">
                     <h3>📁 Detalle del Expediente / Miniperfil</h3>
@@ -431,48 +428,34 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Código de Expediente</label>
-                            <input type="text" id="input-codigo" value="${c.Codigo || ''}" onchange="actualizarCampoLocal('Codigo', this.value)" />
+                            <input type="text" id="input-codigo" value="${c.codigo || ''}" onchange="actualizarCampoLocal('codigo', this.value)" />
                         </div>
                         <div class="form-group">
                             <label>Cédula de Identidad</label>
-                            <input type="text" id="input-cedula" value="${c.Cedula || ''}" onchange="actualizarCampoLocal('Cedula', this.value)" />
+                            <input type="text" id="input-cedula" value="${c.cedula || ''}" onchange="actualizarCampoLocal('cedula', this.value)" />
                         </div>
                         <div class="form-group">
                             <label>Nombre Completo del Cliente</label>
-                            <input type="text" id="input-nombre" value="${c.NombreCliente || ''}" onchange="actualizarCampoLocal('NombreCliente', this.value)" />
+                            <input type="text" id="input-nombre" value="${c.nombreCliente || ''}" onchange="actualizarCampoLocal('nombreCliente', this.value)" />
                         </div>
+                        <!-- CORRECCIÓN 3: Campo de Materia simplificado a texto libre -->
                         <div class="form-group">
                             <label>Materia Legal</label>
-                            <select id="input-materia" onchange="manejarCambioMateria(this.value)">
-                                <option value="Inmobiliario" ${valorSelect === 'Inmobiliario' ? 'selected' : ''}>Inmobiliario</option>
-                                <option value="Civil" ${valorSelect === 'Civil' ? 'selected' : ''}>Civil</option>
-                                <option value="Mercantil" ${valorSelect === 'Mercantil' ? 'selected' : ''}>Mercantil</option>
-                                <option value="Sucesiones / Bienes" ${valorSelect === 'Sucesiones / Bienes' ? 'selected' : ''}>Sucesiones / Bienes</option>
-                                <option value="Laboral" ${valorSelect === 'Laboral' ? 'selected' : ''}>Laboral</option>
-                                <option value="Penal" ${valorSelect === 'Penal' ? 'selected' : ''}>Penal</option>
-                                <option value="Otro" ${valorSelect === 'Otro' ? 'selected' : ''}>Otro (Especificar)</option>
-                            </select>
+                            <input type="text" id="input-materia" value="${c.materia || ''}" placeholder="Ej: Inmobiliario, Civil, Sucesiones..." onchange="actualizarCampoLocal('materia', this.value)" />
                         </div>
-
-                        <!-- CAMPO DE TEXTO PARA ESPECIFICAR CUANDO SE SELECCIONA "Otro" -->
-                        <div class="form-group" id="grupo-materia-custom" style="display: ${valorSelect === 'Otro' ? 'flex' : 'none'};">
-                            <label>Especifique la Materia</label>
-                            <input type="text" id="input-materia-custom" value="${esMateriaCustom ? c.Materia : ''}" placeholder="Ej: Constitucional, Administrativo..." onchange="actualizarCampoLocal('Materia', this.value)" />
-                        </div>
-
                         <div class="form-group">
                             <label>Estado del Caso</label>
-                            <input type="text" id="input-estado" value="${c.EstadoCaso || ''}" onchange="actualizarCampoLocal('EstadoCaso', this.value)" />
+                            <input type="text" id="input-estado" value="${c.estadoCaso || ''}" onchange="actualizarCampoLocal('estadoCaso', this.value)" />
                         </div>
                         <div class="form-group">
                             <label>Fecha Tope / Vencimiento Tribunal</label>
-                            <input type="date" id="input-fecha" value="${c.FechaTope ? c.FechaTope.split('T')[0] : ''}" onchange="actualizarCampoLocal('FechaTope', this.value)" />
+                            <input type="date" id="input-fecha" value="${c.fechaTope ? c.fechaTope.split('T')[0] : ''}" onchange="actualizarCampoLocal('fechaTope', this.value)" />
                         </div>
                     </div>
 
                     <div class="notes-section">
                         <label style="font-weight: 600; font-size: 14px; color: var(--secondary); display: block; margin-bottom: 8px;">Bitácora e Historial de Anotaciones (Texto Libre)</label>
-                        <div class="notes-history" id="display-notas">${c.NotasLibres || 'Sin anotaciones registradas.'}</div>
+                        <div class="notes-history" id="display-notas">${c.notasLibres || 'Sin anotaciones registradas.'}</div>
                         
                         <div class="form-group" style="margin-top: 10px;">
                             <label>Agregar Nueva Anotación u Observación</label>
@@ -488,22 +471,6 @@
             `;
         }
 
-        function manejarCambioMateria(valorSelect) {
-            const grupoCustom = document.getElementById("grupo-materia-custom");
-            if (valorSelect === "Otro") {
-                grupoCustom.style.display = "flex";
-                const inputCustom = document.getElementById("input-materia-custom");
-                // Si venía de una materia predefinida, lo dejamos en blanco para que escriba
-                if (MATERIAS_PREDEFINIDAS.includes(inputCustom.value) || !inputCustom.value) {
-                    inputCustom.value = "";
-                    actualizarCampoLocal("Materia", "");
-                }
-            } else {
-                grupoCustom.style.display = "none";
-                actualizarCampoLocal("Materia", valorSelect);
-            }
-        }
-
         function actualizarCampoLocal(campo, valor) {
             if (clienteSeleccionadoIndex > -1) {
                 clientesData[clienteSeleccionadoIndex][campo] = valor;
@@ -515,13 +482,12 @@
             if (!textoNota) return alert("Por favor escriba una anotación.");
 
             const fechaStr = new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            const formattedNote = `
-[${fechaStr}] ${textoNota}`;
+            const formattedNote = `\n[${fechaStr}] ${textoNota}`;
 
             const c = clientesData[clienteSeleccionadoIndex];
-            c.NotasLibres = (c.NotasLibres || "") + formattedNote;
+            c.notasLibres = (c.notasLibres || "") + formattedNote;
 
-            document.getElementById("display-notas").innerText = c.NotasLibres;
+            document.getElementById("display-notas").innerText = c.notasLibres;
             document.getElementById("nueva-nota-texto").value = "";
             guardarClienteActual();
         }
@@ -530,12 +496,13 @@
             if (clienteSeleccionadoIndex === -1) return;
             const c = clientesData[clienteSeleccionadoIndex];
 
+            // Se estructuran los datos exactamente como el GS espera recibirlos
             fetch(APPS_SCRIPT_URL, {
                 method: "POST",
                 body: JSON.stringify({
-                    action: "guardarCliente",
-                    password: passwordGlobal,
-                    cliente: c
+                    accion: "guardar",
+                    claveMaestra: passwordGlobal,
+                    datosExpediente: c
                 })
             })
             .then(res => res.json())
@@ -556,8 +523,8 @@
             hoy.setHours(0,0,0,0);
 
             clientesData.forEach(c => {
-                if (c.FechaTope) {
-                    const fechaTope = new Date(c.FechaTope);
+                if (c.fechaTope) {
+                    const fechaTope = new Date(c.fechaTope);
                     fechaTope.setHours(0,0,0,0);
                     // Si la fecha tope ya pasó o es para hoy o los próximos 3 días
                     const diffTime = fechaTope - hoy;
