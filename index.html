@@ -34,60 +34,6 @@
             flex-direction: column;
         }
 
-        /* LOGIN OVERLAY */
-        #login-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--primary);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .login-card {
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        .login-card h2 {
-            margin-bottom: 20px;
-            color: var(--primary);
-        }
-
-        .login-card input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 16px;
-        }
-
-        .btn {
-            background-color: var(--accent);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            width: 100%;
-            transition: background 0.2s;
-        }
-
-        .btn:hover {
-            background-color: var(--accent-hover);
-        }
-
         /* APP HEADER */
         header {
             background: var(--primary);
@@ -247,6 +193,22 @@
             margin-top: 20px;
         }
 
+        .btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
         .btn-success {
             background-color: var(--success);
         }
@@ -264,18 +226,7 @@
 </head>
 <body>
 
-    <!-- PANTALLA DE ACCESO SEGURO -->
-    <div id="login-screen">
-        <div class="login-card">
-            <h2>Acceso Legal CRM</h2>
-            <p style="margin-bottom: 20px; color: #64748b; font-size: 14px;">Asistente Legal - Centro de Operaciones</p>
-            <input type="password" id="master-password" placeholder="Ingrese su Clave Maestra" />
-            <button class="btn" onclick="verificarAcceso()">Ingresar</button>
-            <p id="login-error" style="color: var(--danger); margin-top: 15px; font-size: 14px;"></p>
-        </div>
-    </div>
-
-    <!-- CABECERA PRINCIPAL CON BADGE DE NOTIFICACIONES -->
+    <!-- CABECERA PRINCIPAL -->
     <header>
         <div class="header-title">
             <h2>⚖️ Asistente Legal de Bolsillo CRM</h2>
@@ -284,13 +235,13 @@
             </div>
         </div>
         <div>
-            <button class="btn" style="background: #475569; padding: 8px 15px; font-size: 14px;" onclick="cargarClientes()">🔄 Sincronizar</button>
+            <button class="btn" style="background: #475569; padding: 8px 15px; font-size: 14px; width: auto;" onclick="cargarClientes()">🔄 Sincronizar</button>
         </div>
     </header>
 
     <!-- INTERFAZ DE TRABAJO -->
     <div class="main-container">
-        <!-- BARRA LATERAL CON CLIENTES -->
+        <!-- BARRA LATERAL -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <input type="text" id="search-client" class="search-box" placeholder="Buscar por nombre, cédula o código..." onkeyup="filtrarClientes()" />
@@ -301,7 +252,7 @@
             </ul>
         </div>
 
-        <!-- PANEL DETALLADO DEL CLIENTE / CASO -->
+        <!-- PANEL DE DETALLE -->
         <div class="workspace" id="workspace-panel">
             <div class="card" style="text-align: center; color: #64748b; padding: 50px;">
                 <h3>Seleccione un expediente de la lista o cree uno nuevo para comenzar.</h3>
@@ -310,43 +261,19 @@
     </div>
 
     <script>
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwlKq5gI1yXCNWY-gV7B7-WxPI6Y7R1UvBEr3pQC5Hj4YhADGgLtXHSJeLUHjaS1Q4T3A/exec";
-        let passwordGlobal = "";
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxmHsU8QtFrBJKcp2cEkctmJBa7PoKdCuZQdHOUizQzLMsPZvGqBUCyTPItxgRJWHhuJg/exec";
         let clientesData = [];
         let clienteSeleccionadoIndex = null;
 
-        function verificarAcceso() {
-            const pass = document.getElementById("master-password").value;
-            if (!pass) return;
-
-            document.getElementById("login-error").innerText = "Verificando...";
-
-            // CORRECCIÓN 1: Se ajustan los parámetros 'accion' y 'claveMaestra' para que el Apps Script los reconozca
-            fetch(APPS_SCRIPT_URL, {
-                method: "POST",
-                body: JSON.stringify({ accion: "obtener", claveMaestra: pass })
-            })
-            .then(res => res.json())
-            .then(response => {
-                if (response.status === "success") {
-                    passwordGlobal = pass;
-                    document.getElementById("login-screen").style.display = "none";
-                    clientesData = response.data || [];
-                    renderizarListaClientes(clientesData);
-                    calcularAlertas();
-                } else {
-                    document.getElementById("login-error").innerText = response.message || "Acceso denegado.";
-                }
-            })
-            .catch(err => {
-                document.getElementById("login-error").innerText = "Error de conexión con el servidor.";
-            });
-        }
+        // Cargar clientes automáticamente al abrir la página
+        window.onload = function() {
+            cargarClientes();
+        };
 
         function cargarClientes() {
             fetch(APPS_SCRIPT_URL, {
                 method: "POST",
-                body: JSON.stringify({ accion: "obtener", claveMaestra: passwordGlobal })
+                body: JSON.stringify({ accion: "obtener" })
             })
             .then(res => res.json())
             .then(response => {
@@ -358,7 +285,10 @@
                     alert("Error al cargar clientes: " + response.message);
                 }
             })
-            .catch(err => console.error(err));
+            .catch(err => {
+                console.error(err);
+                alert("Error de conexión con el servidor.");
+            });
         }
 
         function renderizarListaClientes(lista) {
@@ -374,7 +304,6 @@
                 const li = document.createElement("li");
                 li.className = `client-item ${clienteSeleccionadoIndex === index ? 'active' : ''}`;
                 li.onclick = () => seleccionarCliente(index);
-                // CORRECCIÓN 2: Las variables ahora están en minúscula (ej: c.nombreCliente) igual que en Apps Script
                 li.innerHTML = `
                     <h4>${c.nombreCliente || 'Sin Nombre'}</h4>
                     <p><strong>Cód:</strong> ${c.codigo || 'N/A'} | <strong>Cédula:</strong> ${c.cedula || 'N/A'}</p>
@@ -438,7 +367,6 @@
                             <label>Nombre Completo del Cliente</label>
                             <input type="text" id="input-nombre" value="${c.nombreCliente || ''}" onchange="actualizarCampoLocal('nombreCliente', this.value)" />
                         </div>
-                        <!-- CORRECCIÓN 3: Campo de Materia simplificado a texto libre -->
                         <div class="form-group">
                             <label>Materia Legal</label>
                             <input type="text" id="input-materia" value="${c.materia || ''}" placeholder="Ej: Inmobiliario, Civil, Sucesiones..." onchange="actualizarCampoLocal('materia', this.value)" />
@@ -496,12 +424,10 @@
             if (clienteSeleccionadoIndex === -1) return;
             const c = clientesData[clienteSeleccionadoIndex];
 
-            // Se estructuran los datos exactamente como el GS espera recibirlos
             fetch(APPS_SCRIPT_URL, {
                 method: "POST",
                 body: JSON.stringify({
                     accion: "guardar",
-                    claveMaestra: passwordGlobal,
                     datosExpediente: c
                 })
             })
@@ -526,7 +452,6 @@
                 if (c.fechaTope) {
                     const fechaTope = new Date(c.fechaTope);
                     fechaTope.setHours(0,0,0,0);
-                    // Si la fecha tope ya pasó o es para hoy o los próximos 3 días
                     const diffTime = fechaTope - hoy;
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                     if (diffDays <= 3) {
