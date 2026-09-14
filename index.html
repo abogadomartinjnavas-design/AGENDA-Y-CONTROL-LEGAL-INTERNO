@@ -3,27 +3,28 @@
 <head>
     <link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASISTENTE LEGAL CRM - Centro de Operaciones</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ASISTENTE LEGAL CRM</title>
     <style>
         :root {
             --primary: #1e293b;
             --secondary: #0f172a;
             --accent: #2563eb;
             --accent-hover: #1d4ed8;
-            --bg-color: #f8fafc;
+            --bg-color: #f1f5f9;
             --card-bg: #ffffff;
             --text-main: #334155;
             --border-color: #cbd5e1;
             --danger: #dc2626;
             --success: #16a34a;
+            --warning: #d97706;
         }
 
-        * {
+        *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
         body {
@@ -32,72 +33,92 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            max-width: 100vw;
+            overflow-x: hidden;
         }
 
-        /* APP HEADER */
+        /* HEADER OPTIMIZADO */
         header {
             background: var(--primary);
             color: white;
-            padding: 15px 30px;
+            padding: 12px 16px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            justify-content: space-between;
+            gap: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        .header-title {
+        .header-brand {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
+        }
+
+        .header-brand h2 {
+            font-size: 16px;
+            font-weight: 700;
+            white-space: nowrap;
         }
 
         .badge {
             background-color: var(--danger);
             color: white;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 14px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
             font-weight: bold;
+            cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
         }
 
-        /* MAIN LAYOUT */
+        .btn-sync {
+            background: #334155;
+            color: white;
+            border: 1px solid #475569;
+            padding: 6px 12px;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        /* LAYOUT ADAPTATIVO */
         .main-container {
             display: grid;
-            grid-template-columns: 350px 1fr;
+            grid-template-columns: 320px 1fr;
             flex: 1;
-            height: calc(100vh - 70px);
+            width: 100%;
+            max-width: 100vw;
         }
 
-        @media (max-width: 900px) {
-            .main-container {
-                grid-template-columns: 1fr;
-                height: auto;
-            }
-        }
-
-        /* SIDEBAR LIST */
         .sidebar {
             background: var(--card-bg);
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
+            height: calc(100vh - 55px);
         }
 
         .sidebar-header {
-            padding: 20px;
+            padding: 12px;
             border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .search-box {
             width: 100%;
-            padding: 10px;
+            padding: 8px 12px;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            margin-bottom: 10px;
+            font-size: 14px;
         }
 
         .client-list {
@@ -107,165 +128,259 @@
         }
 
         .client-item {
-            padding: 15px 20px;
+            padding: 12px 16px;
             border-bottom: 1px solid #f1f5f9;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.15s;
         }
 
         .client-item:hover, .client-item.active {
-            background: #f1f5f9;
+            background: #e2e8f0;
         }
 
-        .client-item h4 {
-            font-size: 16px;
-            color: var(--secondary);
+        .client-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 4px;
         }
 
+        .client-item h4 {
+            font-size: 15px;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
         .client-item p {
-            font-size: 13px;
+            font-size: 12px;
             color: #64748b;
         }
 
-        /* CONTENT WORKSPACE */
+        /* WORKSPACE Y FORMULARIO */
         .workspace {
-            padding: 30px;
+            padding: 16px;
             overflow-y: auto;
-            background: var(--bg-color);
+            height: calc(100vh - 55px);
+            width: 100%;
+        }
+
+        .mobile-back-btn {
+            display: none;
+            background: #cbd5e1;
+            color: #1e293b;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            cursor: pointer;
+            width: fit-content;
         }
 
         .card {
             background: var(--card-bg);
             border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            margin-bottom: 25px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             border: 1px solid var(--border-color);
+            max-width: 100%;
+        }
+
+        .card-header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 16px;
         }
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
+            width: 100%;
         }
 
         .form-group label {
             font-weight: 600;
-            font-size: 14px;
+            font-size: 13px;
             color: var(--secondary);
         }
 
-        .form-group input, .form-group textarea {
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 9px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        /* SWITCH ALERTA MANUAL */
+        .alert-toggle-box {
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+            padding: 10px 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .alert-toggle-box label {
+            font-weight: 600;
+            color: #991b1b;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .checkbox-custom {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--danger);
+            cursor: pointer;
+        }
+
+        /* ANOTACIONES EDITABLES */
+        .notes-section {
+            margin-top: 10px;
+        }
+
+        .notes-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .editable-textarea {
+            width: 100%;
+            min-height: 160px;
             padding: 10px;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            font-size: 15px;
-        }
-
-        .notes-section {
-            margin-top: 20px;
-        }
-
-        .notes-history {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 15px;
-            max-height: 200px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-            font-family: monospace;
-            font-size: 14px;
-            white-space: pre-wrap;
+            font-family: inherit;
+            font-size: 13px;
+            line-height: 1.4;
+            resize: vertical;
+            background-color: #f8fafc;
         }
 
         .action-bar {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             margin-top: 20px;
+            flex-wrap: wrap;
         }
 
         .btn {
-            background-color: var(--accent);
-            color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 10px 16px;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-            width: 100%;
-            transition: background 0.2s;
+            transition: opacity 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
-        .btn:hover {
-            background-color: var(--accent-hover);
-        }
-
-        .btn-success {
-            background-color: var(--success);
-        }
-        .btn-success:hover {
-            background-color: #15803d;
-        }
+        .btn:active { opacity: 0.8; }
+        .btn-primary { background-color: var(--accent); color: white; }
+        .btn-success { background-color: var(--success); color: white; }
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-small { padding: 6px 10px; font-size: 12px; }
 
         .loading {
             text-align: center;
             padding: 20px;
-            font-style: italic;
+            font-size: 13px;
             color: #64748b;
+        }
+
+        /* VISTA MÓVIL PANTALLA COMPLETA */
+        @media (max-width: 768px) {
+            .main-container {
+                display: block;
+            }
+            .sidebar {
+                height: auto;
+                display: flex;
+            }
+            .workspace {
+                display: none;
+                height: auto;
+            }
+            .main-container.show-detail .sidebar {
+                display: none;
+            }
+            .main-container.show-detail .workspace {
+                display: block;
+            }
+            .mobile-back-btn {
+                display: inline-block;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- CABECERA PRINCIPAL -->
+    <!-- CABECERA -->
     <header>
-        <div class="header-title">
-            <h2>⚖️ Asistente Legal de Bolsillo CRM</h2>
-            <div id="alert-badge" class="badge" style="display: none;" title="Plazos vencidos o próximos a vencer">
-                🚨 <span id="alert-count">0</span> Alertas
+        <div class="header-brand">
+            <h2>⚖️ CRM Legal</h2>
+            <div id="alert-badge" class="badge" style="display: none;" onclick="filtrarAlertas()" title="Filtrar expedientes con alertas">
+                🚨 <span id="alert-count">0</span>
             </div>
         </div>
-        <div>
-            <button class="btn" style="background: #475569; padding: 8px 15px; font-size: 14px; width: auto;" onclick="cargarClientes()">🔄 Sincronizar</button>
-        </div>
+        <button class="btn-sync" onclick="cargarClientes()">🔄 Sincronizar</button>
     </header>
 
-    <!-- INTERFAZ DE TRABAJO -->
-    <div class="main-container">
-        <!-- BARRA LATERAL -->
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="main-container" id="main-container">
+        
+        <!-- BARRA LATERAL (LISTA DE EXPEDIENTES) -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <input type="text" id="search-client" class="search-box" placeholder="Buscar por nombre, cédula o código..." onkeyup="filtrarClientes()" />
-                <button class="btn btn-success" style="font-size: 14px; padding: 8px;" onclick="nuevoCliente()">➕ Nuevo Expediente</button>
+                <input type="text" id="search-client" class="search-box" placeholder="🔍 Buscar cliente, cédula o código..." onkeyup="filtrarClientes()" />
+                <button class="btn btn-success" style="width: 100%;" onclick="nuevoCliente()">➕ Nuevo Expediente</button>
             </div>
             <ul id="client-list" class="client-list">
-                <div class="loading">Cargando expedientes...</div>
+                <div class="loading">Cargando datos...</div>
             </ul>
         </div>
 
-        <!-- PANEL DE DETALLE -->
+        <!-- PANEL DE DETALLE / EDICIÓN -->
         <div class="workspace" id="workspace-panel">
-            <div class="card" style="text-align: center; color: #64748b; padding: 50px;">
-                <h3>Seleccione un expediente de la lista o cree uno nuevo para comenzar.</h3>
+            <button class="mobile-back-btn" onclick="volverALista()">⬅️ Volver a Lista</button>
+            <div id="workspace-content">
+                <div class="card" style="text-align: center; color: #64748b; padding: 40px 20px;">
+                    <h3>Seleccione un expediente de la lista o cree uno nuevo para comenzar.</h3>
+                </div>
             </div>
         </div>
+
     </div>
 
     <script>
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxmHsU8QtFrBJKcp2cEkctmJBa7PoKdCuZQdHOUizQzLMsPZvGqBUCyTPItxgRJWHhuJg/exec";
         let clientesData = [];
         let clienteSeleccionadoIndex = null;
+        let mostrandoSoloAlertas = false;
 
-        // Cargar clientes automáticamente al abrir la página
         window.onload = function() {
             cargarClientes();
         };
@@ -282,13 +397,23 @@
                     renderizarListaClientes(clientesData);
                     calcularAlertas();
                 } else {
-                    alert("Error al cargar clientes: " + response.message);
+                    alert("Error al cargar datos: " + response.message);
                 }
             })
-            .catch(err => {
-                console.error(err);
-                alert("Error de conexión con el servidor.");
-            });
+            .catch(err => alert("Error de conexión con la base de datos."));
+        }
+
+        function esAlertaActiva(c) {
+            if (c.alertaManual) return true;
+            if (c.fechaTope) {
+                const hoy = new Date();
+                hoy.setHours(0,0,0,0);
+                const fechaTope = new Date(c.fechaTope);
+                fechaTope.setHours(0,0,0,0);
+                const diffDays = Math.ceil((fechaTope - hoy) / (1000 * 60 * 60 * 24));
+                return diffDays <= 3;
+            }
+            return false;
         }
 
         function renderizarListaClientes(lista) {
@@ -296,18 +421,23 @@
             ul.innerHTML = "";
 
             if (lista.length === 0) {
-                ul.innerHTML = `<div class="loading">No hay expedientes registrados.</div>`;
+                ul.innerHTML = `<div class="loading">No hay expedientes para mostrar.</div>`;
                 return;
             }
 
             lista.forEach((c, index) => {
+                const realIndex = clientesData.indexOf(c);
+                const tieneAlerta = esAlertaActiva(c);
                 const li = document.createElement("li");
-                li.className = `client-item ${clienteSeleccionadoIndex === index ? 'active' : ''}`;
-                li.onclick = () => seleccionarCliente(index);
+                li.className = `client-item ${clienteSeleccionadoIndex === realIndex ? 'active' : ''}`;
+                li.onclick = () => seleccionarCliente(realIndex);
                 li.innerHTML = `
-                    <h4>${c.nombreCliente || 'Sin Nombre'}</h4>
-                    <p><strong>Cód:</strong> ${c.codigo || 'N/A'} | <strong>Cédula:</strong> ${c.cedula || 'N/A'}</p>
-                    <p style="color: var(--accent); font-size: 12px; margin-top: 2px;">${c.materia || 'Materia no asignada'}</p>
+                    <div class="client-item-header">
+                        <h4>${c.nombreCliente || 'Sin Nombre'}</h4>
+                        ${tieneAlerta ? '<span>🚨</span>' : ''}
+                    </div>
+                    <p><strong>Cód:</strong> ${c.codigo || 'N/A'} | <strong>CI:</strong> ${c.cedula || 'N/A'}</p>
+                    <p style="color: var(--accent); margin-top: 2px;">${c.materia || 'General'} • <strong>${c.estadoCaso || 'En Trámite'}</strong></p>
                 `;
                 ul.appendChild(li);
             });
@@ -315,16 +445,28 @@
 
         function filtrarClientes() {
             const query = document.getElementById("search-client").value.toLowerCase();
-            const filtrados = clientesData.filter(c => 
+            let filtrados = clientesData.filter(c => 
                 (c.nombreCliente && c.nombreCliente.toLowerCase().includes(query)) ||
                 (c.cedula && c.cedula.toString().toLowerCase().includes(query)) ||
-                (c.codigo && c.codigo.toString().toLowerCase().includes(query))
+                (c.codigo && c.codigo.toString().toLowerCase().includes(query)) ||
+                (c.materia && c.materia.toLowerCase().includes(query))
             );
+
+            if (mostrandoSoloAlertas) {
+                filtrados = filtrados.filter(c => esAlertaActiva(c));
+            }
+
             renderizarListaClientes(filtrados);
         }
 
+        function filtrarAlertas() {
+            mostrandoSoloAlertas = !mostrandoSoloAlertas;
+            const badge = document.getElementById("alert-badge");
+            badge.style.opacity = mostrandoSoloAlertas ? "0.6" : "1";
+            filtrarClientes();
+        }
+
         function nuevoCliente() {
-            clienteSeleccionadoIndex = -1;
             const nuevoObj = {
                 codigo: "EXP-" + new Date().getFullYear() + "-" + Math.floor(100 + Math.random() * 900),
                 cedula: "",
@@ -332,10 +474,10 @@
                 materia: "",
                 estadoCaso: "En Trámite",
                 fechaTope: "",
-                notasLibres: `[${new Date().toLocaleDateString()}]: Creación del expediente.\n`
+                notasLibres: `[${new Date().toLocaleDateString()}]: Creación del expediente.\n`,
+                alertaManual: false
             };
             clientesData.unshift(nuevoObj);
-            renderizarListaClientes(clientesData);
             seleccionarCliente(0);
         }
 
@@ -344,15 +486,30 @@
             const c = clientesData[index];
             renderizarWorkspace(c);
             renderizarListaClientes(clientesData);
+            
+            // Cambiar a vista de detalle en dispositivos móviles
+            document.getElementById("main-container").classList.add("show-detail");
+        }
+
+        function volverALista() {
+            document.getElementById("main-container").classList.remove("show-detail");
         }
 
         function renderizarWorkspace(c) {
-            const panel = document.getElementById("workspace-panel");
+            const panel = document.getElementById("workspace-content");
             
             panel.innerHTML = `
                 <div class="card">
-                    <h3>📁 Detalle del Expediente / Miniperfil</h3>
-                    <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">Edite cualquier campo del cliente. Los cambios se guardarán automáticamente en su base de datos.</p>
+                    <div class="card-header-actions">
+                        <h3 style="font-size: 16px; color: var(--secondary);">📂 Expediente: ${c.codigo}</h3>
+                        <button class="btn btn-danger btn-small" onclick="eliminarClienteActual()">🗑️ Eliminar</button>
+                    </div>
+
+                    <!-- CONTROL DE ALERTA MANUAL -->
+                    <div class="alert-toggle-box">
+                        <label for="check-alerta">🚨 Marcar Alerta / Atención Prioritaria</label>
+                        <input type="checkbox" id="check-alerta" class="checkbox-custom" ${c.alertaManual ? 'checked' : ''} onchange="actualizarCampoLocal('alertaManual', this.checked)" />
+                    </div>
                     
                     <div class="form-grid">
                         <div class="form-group">
@@ -364,64 +521,61 @@
                             <input type="text" id="input-cedula" value="${c.cedula || ''}" onchange="actualizarCampoLocal('cedula', this.value)" />
                         </div>
                         <div class="form-group">
-                            <label>Nombre Completo del Cliente</label>
+                            <label>Nombre del Cliente</label>
                             <input type="text" id="input-nombre" value="${c.nombreCliente || ''}" onchange="actualizarCampoLocal('nombreCliente', this.value)" />
                         </div>
                         <div class="form-group">
                             <label>Materia Legal</label>
-                            <input type="text" id="input-materia" value="${c.materia || ''}" placeholder="Ej: Inmobiliario, Civil, Sucesiones..." onchange="actualizarCampoLocal('materia', this.value)" />
+                            <input type="text" id="input-materia" value="${c.materia || ''}" placeholder="Ej: Inmobiliario, Mercantil..." onchange="actualizarCampoLocal('materia', this.value)" />
                         </div>
                         <div class="form-group">
                             <label>Estado del Caso</label>
-                            <input type="text" id="input-estado" value="${c.estadoCaso || ''}" onchange="actualizarCampoLocal('estadoCaso', this.value)" />
+                            <select id="input-estado" onchange="actualizarCampoLocal('estadoCaso', this.value)">
+                                <option value="En Trámite" ${c.estadoCaso === 'En Trámite' ? 'selected' : ''}>En Trámite</option>
+                                <option value="Pendiente Cliente" ${c.estadoCaso === 'Pendiente Cliente' ? 'selected' : ''}>Pendiente Cliente</option>
+                                <option value="En Tribunal" ${c.estadoCaso === 'En Tribunal' ? 'selected' : ''}>En Tribunal</option>
+                                <option value="Concluido" ${c.estadoCaso === 'Concluido' ? 'selected' : ''}>Concluido</option>
+                            </select>
                         </div>
                         <div class="form-group">
-                            <label>Fecha Tope / Vencimiento Tribunal</label>
+                            <label>Vencimiento / Fecha Tope</label>
                             <input type="date" id="input-fecha" value="${c.fechaTope ? c.fechaTope.split('T')[0] : ''}" onchange="actualizarCampoLocal('fechaTope', this.value)" />
                         </div>
                     </div>
 
+                    <!-- SECCIÓN DE ANOTACIONES EDITABLES -->
                     <div class="notes-section">
-                        <label style="font-weight: 600; font-size: 14px; color: var(--secondary); display: block; margin-bottom: 8px;">Bitácora e Historial de Anotaciones (Texto Libre)</label>
-                        <div class="notes-history" id="display-notas">${c.notasLibres || 'Sin anotaciones registradas.'}</div>
-                        
-                        <div class="form-group" style="margin-top: 10px;">
-                            <label>Agregar Nueva Anotación u Observación</label>
-                            <textarea id="nueva-nota-texto" rows="3" placeholder="Escriba el avance o diligencia realizada hoy..."></textarea>
+                        <div class="notes-toolbar">
+                            <label style="font-weight: 600; font-size: 13px; color: var(--secondary);">Bitácora de Anotaciones (Editable)</label>
+                            <button class="btn btn-primary btn-small" onclick="insertarEstampaTiempo()">+ Fecha y hora</button>
                         </div>
-                        <button class="btn" style="width: auto; margin-top: 10px; padding: 8px 15px; font-size: 14px;" onclick="agregarNotaAutocreable()">➕ Registrar Anotación</button>
+                        <textarea id="input-notas" class="editable-textarea" onchange="actualizarCampoLocal('notasLibres', this.value)" placeholder="Escriba las anotaciones o avances del expediente libremente...">${c.notasLibres || ''}</textarea>
                     </div>
 
                     <div class="action-bar">
-                        <button class="btn btn-success" onclick="guardarClienteActual()">💾 Guardar y Sincronizar Cambios</button>
+                        <button class="btn btn-success" style="width: 100%;" onclick="guardarClienteActual()">💾 Guardar Cambios</button>
                     </div>
                 </div>
             `;
         }
 
         function actualizarCampoLocal(campo, valor) {
-            if (clienteSeleccionadoIndex > -1) {
+            if (clienteSeleccionadoIndex !== null && clienteSeleccionadoIndex > -1) {
                 clientesData[clienteSeleccionadoIndex][campo] = valor;
+                calcularAlertas();
             }
         }
 
-        function agregarNotaAutocreable() {
-            const textoNota = document.getElementById("nueva-nota-texto").value.trim();
-            if (!textoNota) return alert("Por favor escriba una anotación.");
-
-            const fechaStr = new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            const formattedNote = `\n[${fechaStr}] ${textoNota}`;
-
-            const c = clientesData[clienteSeleccionadoIndex];
-            c.notasLibres = (c.notasLibres || "") + formattedNote;
-
-            document.getElementById("display-notas").innerText = c.notasLibres;
-            document.getElementById("nueva-nota-texto").value = "";
-            guardarClienteActual();
+        function insertarEstampaTiempo() {
+            const textarea = document.getElementById("input-notas");
+            const fechaStr = `\n[${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}]: `;
+            textarea.value += fechaStr;
+            actualizarCampoLocal('notasLibres', textarea.value);
+            textarea.focus();
         }
 
         function guardarClienteActual() {
-            if (clienteSeleccionadoIndex === -1) return;
+            if (clienteSeleccionadoIndex === null || clienteSeleccionadoIndex === -1) return;
             const c = clientesData[clienteSeleccionadoIndex];
 
             fetch(APPS_SCRIPT_URL, {
@@ -434,30 +588,53 @@
             .then(res => res.json())
             .then(response => {
                 if (response.status === "success") {
-                    alert("Expediente guardado y actualizado con éxito.");
+                    alert("Expediente guardado correctamente.");
                     cargarClientes();
                 } else {
                     alert("Error: " + response.message);
                 }
             })
-            .catch(err => alert("Error de conexión al guardar."));
+            .catch(err => alert("Error al conectar con la base de datos."));
+        }
+
+        function eliminarClienteActual() {
+            if (clienteSeleccionadoIndex === null || clienteSeleccionadoIndex === -1) return;
+            const c = clientesData[clienteSeleccionadoIndex];
+
+            if (!confirm(`¿Está seguro de eliminar el expediente ${c.codigo} de ${c.nombreCliente}?`)) {
+                return;
+            }
+
+            fetch(APPS_SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    accion: "eliminar",
+                    codigo: c.codigo
+                })
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === "success") {
+                    alert("Expediente eliminado.");
+                    clienteSeleccionadoIndex = null;
+                    document.getElementById("workspace-content").innerHTML = `
+                        <div class="card" style="text-align: center; color: #64748b; padding: 40px 20px;">
+                            <h3>Seleccione un expediente de la lista o cree uno nuevo para comenzar.</h3>
+                        </div>
+                    `;
+                    volverALista();
+                    cargarClientes();
+                } else {
+                    alert("Error al eliminar: " + response.message);
+                }
+            })
+            .catch(err => alert("Error de conexión al intentar eliminar."));
         }
 
         function calcularAlertas() {
             let alertasCount = 0;
-            const hoy = new Date();
-            hoy.setHours(0,0,0,0);
-
             clientesData.forEach(c => {
-                if (c.fechaTope) {
-                    const fechaTope = new Date(c.fechaTope);
-                    fechaTope.setHours(0,0,0,0);
-                    const diffTime = fechaTope - hoy;
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    if (diffDays <= 3) {
-                        alertasCount++;
-                    }
-                }
+                if (esAlertaActiva(c)) alertasCount++;
             });
 
             const badge = document.getElementById("alert-badge");
